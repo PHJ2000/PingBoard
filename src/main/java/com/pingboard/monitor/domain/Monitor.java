@@ -69,6 +69,10 @@ public class Monitor {
     @Column(nullable = false)
     private int consecutiveFailures;
 
+    private Instant pausedAt;
+
+    private Instant lastResumedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private MonitorStatus lastNotifiedStatus;
@@ -107,10 +111,20 @@ public class Monitor {
 
     public void pause() {
         this.active = false;
+        this.pausedAt = Instant.now();
     }
 
     public void resume() {
         this.active = true;
+        this.lastResumedAt = Instant.now();
+    }
+
+    public void updateDetails(String name, String url, Integer intervalSeconds, String environment, Set<String> tags) {
+        this.name = name;
+        this.url = url;
+        this.intervalSeconds = intervalSeconds;
+        this.environment = environment;
+        this.tags = new LinkedHashSet<>(tags);
     }
 
     public boolean shouldNotifyFailure(int failureThreshold) {

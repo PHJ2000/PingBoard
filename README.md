@@ -4,13 +4,27 @@ PingBoard is a Spring Boot MVP for monitoring HTTP endpoints.
 
 It lets you register URLs, run checks on demand, store recent check history, and expose operational metrics through Actuator and Prometheus.
 
+## What Problem It Solves
+
+When a small service starts failing, teams often bounce between multiple tools just to answer three simple questions:
+Is the endpoint down, did the app log anything useful, and did an alert actually fire?
+PingBoard compresses that loop into one local-first stack so you can register endpoints, trigger checks, receive Discord alerts, inspect logs in Grafana, and confirm exceptions in Sentry without standing up a full production platform first.
+
+## Screenshots
+
+![PingBoard monitor board](docs/screenshots/pingboard-dashboard.png)
+
+![Grafana overview dashboard](docs/screenshots/grafana-overview.png)
+
 ## Features
 
 - Register HTTP/HTTPS monitors
 - List monitors and inspect the latest status
 - Group monitors by environment and tags
 - Trigger manual checks
+- Edit monitor targets without recreating them
 - Pause or resume noisy monitors without deleting them
+- Resume a paused monitor and immediately run a fresh check
 - Persist recent check history in H2 or PostgreSQL
 - Scheduled background checks every 30 seconds
 - Lightweight web dashboard at `/`

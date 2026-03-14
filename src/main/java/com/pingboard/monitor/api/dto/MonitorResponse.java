@@ -18,6 +18,8 @@ public record MonitorResponse(
         String lastError,
         Instant lastCheckedAt,
         Instant lastSuccessCheckedAt,
+        Instant pausedAt,
+        Instant lastResumedAt,
         int consecutiveFailures,
         Instant createdAt
 ) {
@@ -36,6 +38,8 @@ public record MonitorResponse(
                 monitor.getLastError(),
                 monitor.getLastCheckedAt(),
                 monitor.getLastSuccessCheckedAt(),
+                monitor.getPausedAt(),
+                monitor.getLastResumedAt(),
                 monitor.getConsecutiveFailures(),
                 monitor.getCreatedAt()
         );

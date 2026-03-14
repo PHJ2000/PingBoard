@@ -4,6 +4,7 @@ import com.pingboard.alert.config.AlertProperties;
 import com.pingboard.alert.service.MonitorAlertService;
 import com.pingboard.monitor.api.dto.CreateMonitorRequest;
 import com.pingboard.monitor.api.dto.DashboardSummaryResponse;
+import com.pingboard.monitor.api.dto.UpdateMonitorRequest;
 import com.pingboard.monitor.domain.CheckResult;
 import com.pingboard.monitor.domain.Monitor;
 import com.pingboard.monitor.domain.MonitorStatus;
@@ -32,10 +33,7 @@ public class MonitorService {
 
     @Transactional
     public Monitor create(CreateMonitorRequest request) {
-        Set<String> tags = request.tags() == null ? Set.of() : request.tags().stream()
-                .filter(StringUtils::hasText)
-                .map(tag -> tag.trim().toLowerCase(Locale.ROOT))
-                .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
+        Set<String> tags = sanitizeTags(request.tags());
         Monitor monitor = new Monitor(
                 request.name(),
                 request.url(),
@@ -118,6 +116,19 @@ public class MonitorService {
     }
 
     @Transactional
+    public Monitor update(Long monitorId, UpdateMonitorRequest request) {
+        Monitor monitor = findById(monitorId);
+        monitor.updateDetails(
+                request.name(),
+                request.url(),
+                request.intervalSeconds(),
+                request.environment().trim().toLowerCase(Locale.ROOT),
+                sanitizeTags(request.tags())
+        );
+        return monitor;
+    }
+
+    @Transactional
     public Monitor pause(Long monitorId) {
         Monitor monitor = findById(monitorId);
         monitor.pause();
@@ -128,6 +139,7 @@ public class MonitorService {
     public Monitor resume(Long monitorId) {
         Monitor monitor = findById(monitorId);
         monitor.resume();
+        runCheck(monitorId);
         return monitor;
     }
 
@@ -135,5 +147,12 @@ public class MonitorService {
     public void runScheduledChecks() {
         monitorRepository.findAllByActiveTrueOrderByIdAsc()
                 .forEach(monitor -> runCheck(monitor.getId()));
+    }
+
+    private Set<String> sanitizeTags(List<String> tags) {
+        return tags == null ? Set.of() : tags.stream()
+                .filter(StringUtils::hasText)
+                .map(tag -> tag.trim().toLowerCase(Locale.ROOT))
+                .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
     }
 }

@@ -363,7 +363,8 @@
     }
 
     async function request(path, options = {}) {
-        const response = await fetch(path, {
+        const resolvedPath = path.startsWith("http") ? path : new URL(path, window.location.origin).toString();
+        const response = await fetch(resolvedPath, {
             headers: { "Content-Type": "application/json" },
             ...options,
         });
@@ -480,8 +481,9 @@
 
                     <div class="actions">
                         <button class="primary" data-action="check" data-id="${monitor.id}">Run check</button>
+                        <button class="ghost" data-action="edit" data-id="${monitor.id}">Edit monitor</button>
                         <button class="${monitor.active ? "danger" : "ghost"}" data-action="${monitor.active ? "pause" : "resume"}" data-id="${monitor.id}">
-                            ${monitor.active ? "Pause monitor" : "Resume monitor"}
+                            ${monitor.active ? "Pause monitor" : "Resume + check"}
                         </button>
                         <button class="ghost" data-action="history" data-id="${monitor.id}">Load history</button>
                     </div>
@@ -489,6 +491,8 @@
                     <div class="hint">
                         Active: <strong>${monitor.active ? "Yes" : "No"}</strong> |
                         Last checked: <strong>${formatDate(monitor.lastCheckedAt)}</strong> |
+                        Paused at: <strong>${formatDate(monitor.pausedAt)}</strong> |
+                        Resumed at: <strong>${formatDate(monitor.lastResumedAt)}</strong> |
                         Last error: <strong>${monitor.lastError ?? "-"}</strong>
                     </div>
 
@@ -553,9 +557,40 @@
                 await loadChecks(monitorId);
                 return;
             }
+            if (action === "edit") {
+                const monitors = await request("/api/monitors");
+                const monitor = monitors.find(item => String(item.id) === String(monitorId));
+                if (!monitor) return;
+
+                const name = prompt("Monitor name", monitor.name);
+                if (!name) return;
+                const url = prompt("Monitor URL", monitor.url);
+                if (!url) return;
+                const environment = prompt("Environment", monitor.environment);
+                if (!environment) return;
+                const tags = prompt("Tags (comma separated)", (monitor.tags || []).join(", "));
+                const intervalSeconds = prompt("Interval seconds", monitor.intervalSeconds);
+                if (!intervalSeconds) return;
+
+                await request(`/api/monitors/${monitorId}`, {
+                    method: "PATCH",
+                    body: JSON.stringify({
+                        name,
+                        url,
+                        environment,
+                        tags: tags ? tags.split(",").map(tag => tag.trim()).filter(Boolean) : [],
+                        intervalSeconds: Number(intervalSeconds),
+                    }),
+                });
+                await refresh();
+                return;
+            }
             if (action === "pause" || action === "resume") {
                 await request(`/api/monitors/${monitorId}/${action}`, { method: "POST" });
                 await refresh();
+                if (action === "resume") {
+                    await loadChecks(monitorId);
+                }
                 return;
             }
             if (action === "history") {

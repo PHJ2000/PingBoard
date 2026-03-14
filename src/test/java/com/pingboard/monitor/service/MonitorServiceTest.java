@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.pingboard.alert.config.AlertProperties;
 import com.pingboard.alert.service.MonitorAlertService;
 import com.pingboard.monitor.api.dto.CreateMonitorRequest;
+import com.pingboard.monitor.api.dto.UpdateMonitorRequest;
 import com.pingboard.monitor.domain.CheckResult;
 import com.pingboard.monitor.domain.Monitor;
 import com.pingboard.monitor.domain.MonitorStatus;
@@ -62,6 +63,7 @@ class MonitorServiceTest {
 
         assertThat(paused.isActive()).isFalse();
         assertThat(resumed.isActive()).isTrue();
+        assertThat(resumed.getLastCheckedAt()).isNotNull();
     }
 
     @Test
@@ -90,6 +92,23 @@ class MonitorServiceTest {
         assertThat(prodMonitors).isNotEmpty();
         assertThat(prodMonitors).allMatch(monitor -> monitor.getEnvironment().equals("prod"));
         assertThat(prodMonitors.stream().map(Monitor::getName)).contains("Prod API");
+    }
+
+    @Test
+    void updatesMonitorDetailsWithoutRecreatingIt() {
+        Monitor monitor = monitorService.create(new CreateMonitorRequest("Old API", "https://example.com/old", 60, "dev", List.of("legacy")));
+
+        Monitor updated = monitorService.update(
+                monitor.getId(),
+                new UpdateMonitorRequest("New API", "https://example.com/new", 120, "prod", List.of("critical", "public"))
+        );
+
+        assertThat(updated.getId()).isEqualTo(monitor.getId());
+        assertThat(updated.getName()).isEqualTo("New API");
+        assertThat(updated.getUrl()).isEqualTo("https://example.com/new");
+        assertThat(updated.getIntervalSeconds()).isEqualTo(120);
+        assertThat(updated.getEnvironment()).isEqualTo("prod");
+        assertThat(updated.getTags()).containsExactlyInAnyOrder("critical", "public");
     }
 
     @TestConfiguration
