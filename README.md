@@ -27,6 +27,7 @@ It lets you register URLs, run checks on demand, store recent check history, and
 - H2 for local quickstart
 - PostgreSQL for Docker runtime
 - Prometheus metrics registry
+- Grafana + Loki + Promtail local observability stack
 - Sentry Spring Boot starter
 
 ## Run locally
@@ -45,7 +46,7 @@ set SPRING_PROFILES_ACTIVE=postgres
 ./gradlew bootRun
 ```
 
-### 3. Full local stack with app + Postgres + Prometheus
+### 3. Full local stack with app + Postgres + Prometheus + Grafana + Loki
 
 ```bash
 docker compose up --build
@@ -78,6 +79,11 @@ set PINGBOARD_OPERATOR_USERNAME=ops-admin
 set PINGBOARD_OPERATOR_PASSWORD=change-me
 ./gradlew bootRun
 ```
+
+### 6. Settings template
+
+Copy `.env.example` to `.env` and only fill the values you actually need.
+If you skip Sentry and webhook values, the local stack still works.
 
 ## API
 
@@ -135,10 +141,13 @@ curl http://localhost:8080/api/monitors/summary?environment=staging
 - Health: `http://localhost:8080/actuator/health`
 - Prometheus metrics: `http://localhost:8080/actuator/prometheus`
 - Prometheus UI: `http://localhost:9090`
+- Grafana UI: `http://localhost:3000`
+- Loki API: `http://localhost:3100`
 - Browser dashboard: `http://localhost:8080`
 
 `/actuator/health` and `/actuator/info` stay public for probes.
-`/actuator/prometheus` now requires the operator credentials, so configure your scraper accordingly.
+`/actuator/prometheus` stays public so the bundled Prometheus container can scrape without extra setup.
+Grafana starts with pre-provisioned Prometheus and Loki datasources plus a `PingBoard Overview` dashboard.
 
 To enable Sentry, provide a DSN:
 

@@ -17,6 +17,10 @@ spring:
     virtual:
       enabled: true
 
+logging:
+  file:
+    name: ${PINGBOARD_LOG_FILE:./runtime/logs/pingboard.log}
+
 management:
   endpoints:
     web:

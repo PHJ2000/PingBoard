@@ -29,8 +29,11 @@ services:
       PINGBOARD_OPERATOR_USERNAME: ${PINGBOARD_OPERATOR_USERNAME:-operator}
       PINGBOARD_OPERATOR_PASSWORD: ${PINGBOARD_OPERATOR_PASSWORD:-pingboard123!}
       PINGBOARD_OPERATOR_ROLE: ${PINGBOARD_OPERATOR_ROLE:-OPERATOR}
+      PINGBOARD_LOG_FILE: /var/log/pingboard/pingboard.log
     ports:
       - "8080:8080"
+    volumes:
+      - pingboard-logs:/var/log/pingboard
 
   prometheus:
     image: prom/prometheus:v3.4.1
@@ -42,6 +45,42 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+
+  loki:
+    image: grafana/loki:3.5.3
+    command: ["-config.file=/etc/loki/config.yml"]
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml:ro
+
+  promtail:
+    image: grafana/promtail:3.5.3
+    command: ["-config.file=/etc/promtail/config.yml"]
+    depends_on:
+      - loki
+    volumes:
+      - pingboard-logs:/var/log/pingboard:ro
+      - ./promtail/config.yml:/etc/promtail/config.yml:ro
+
+  grafana:
+    image: grafana/grafana:12.2.0
+    depends_on:
+      - prometheus
+      - loki
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
 
 volumes:
   postgres-data:
+  grafana-data:
+  pingboard-logs:

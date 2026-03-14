@@ -1,0 +1,20 @@
+groups:
+  - name: pingboard
+    rules:
+      - alert: PingBoardAppDown
+        expr: up{job="pingboard"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: PingBoard app is down
+          description: PingBoard has not been scrapeable for at least 1 minute.
+
+      - alert: PingBoardMonitorDown
+        expr: pingboard_monitors_down > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: One or more monitors are down
+          description: PingBoard currently has endpoint failures recorded.

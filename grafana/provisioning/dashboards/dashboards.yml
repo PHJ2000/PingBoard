@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: PingBoard
+    orgId: 1
+    folder: PingBoard
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 15
+    options:
+      path: /var/lib/grafana/dashboards
