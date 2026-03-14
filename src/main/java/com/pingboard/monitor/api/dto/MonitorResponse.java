@@ -14,6 +14,8 @@ public record MonitorResponse(
         Long lastLatencyMs,
         String lastError,
         Instant lastCheckedAt,
+        Instant lastSuccessCheckedAt,
+        int consecutiveFailures,
         Instant createdAt
 ) {
     public static MonitorResponse from(Monitor monitor) {
@@ -28,6 +30,8 @@ public record MonitorResponse(
                 monitor.getLastLatencyMs(),
                 monitor.getLastError(),
                 monitor.getLastCheckedAt(),
+                monitor.getLastSuccessCheckedAt(),
+                monitor.getConsecutiveFailures(),
                 monitor.getCreatedAt()
         );
     }

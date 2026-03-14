@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PingBoard</title>
+    <style>
+        :root {
+            --bg: #f6f2e8;
+            --panel: rgba(255, 255, 255, 0.84);
+            --ink: #1b2a2f;
+            --muted: #5d6a70;
+            --accent: #0f766e;
+            --accent-soft: #d7f3ee;
+            --danger: #c2410c;
+            --danger-soft: #ffe7db;
+            --border: rgba(27, 42, 47, 0.12);
+            --shadow: 0 18px 44px rgba(27, 42, 47, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", "Noto Sans KR", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 28%),
+                radial-gradient(circle at top right, rgba(194, 65, 12, 0.14), transparent 22%),
+                var(--bg);
+        }
+
+        .page {
+            width: min(1160px, calc(100vw - 32px));
+            margin: 32px auto 56px;
+        }
+
+        .hero {
+            display: grid;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(2.2rem, 4vw, 4rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+        }
+
+        .hero p {
+            margin: 0;
+            max-width: 720px;
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(14px);
+        }
+
+        .panel-inner {
+            padding: 22px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .summary-card {
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid var(--border);
+        }
+
+        .summary-card strong {
+            display: block;
+            font-size: 1.5rem;
+            margin-top: 4px;
+        }
+
+        .summary-card span {
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        form {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            font: inherit;
+            background: rgba(255, 255, 255, 0.92);
+        }
+
+        button {
+            border: none;
+            border-radius: 999px;
+            padding: 11px 16px;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        button.ghost {
+            background: rgba(27, 42, 47, 0.06);
+            color: var(--ink);
+        }
+
+        button.danger {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .monitor-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .monitor-card {
+            overflow: hidden;
+        }
+
+        .monitor-card .panel-inner {
+            display: grid;
+            gap: 18px;
+        }
+
+        .topline {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .topline h2 {
+            margin: 0;
+            font-size: 1.15rem;
+        }
+
+        .url {
+            margin-top: 6px;
+            color: var(--muted);
+            word-break: break-all;
+        }
+
+        .badge {
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .badge.up {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .badge.down {
+            background: var(--danger-soft);
+            color: var(--danger);
+        }
+
+        .badge.unknown {
+            background: rgba(27, 42, 47, 0.08);
+            color: var(--muted);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .detail-grid div {
+            padding: 12px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid var(--border);
+        }
+
+        .detail-grid span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checks {
+            display: grid;
+            gap: 8px;
+            padding-top: 4px;
+        }
+
+        .check-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 11px 12px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid var(--border);
+            font-size: 0.92rem;
+        }
+
+        .empty {
+            color: var(--muted);
+            padding: 20px 0 4px;
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 960px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .page {
+                width: min(100vw - 20px, 1160px);
+                margin: 20px auto 40px;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="page">
+    <section class="hero">
+        <h1>PingBoard</h1>
+        <p>
+            Fast weekend ops board for checking whether your endpoints are healthy,
+            how fast they respond, and where failures are stacking up.
+        </p>
+    </section>
+
+    <section class="layout">
+        <aside class="panel">
+            <div class="panel-inner">
+                <h2>Ops Snapshot</h2>
+                <div id="summary" class="summary-grid"></div>
+
+                <form id="monitor-form">
+                    <input id="name" name="name" placeholder="Monitor name" required />
+                    <input id="url" name="url" placeholder="https://example.com/health" required />
+                    <input id="intervalSeconds" name="intervalSeconds" type="number" min="30" max="3600" value="60" required />
+                    <button class="primary" type="submit">Add Monitor</button>
+                </form>
+
+                <p class="hint">
+                    Register endpoints here, then use the cards on the right to run checks,
+                    pause noisy monitors, and inspect the latest failures.
+                </p>
+            </div>
+        </aside>
+
+        <section class="monitor-list" id="monitor-list"></section>
+    </section>
+</main>
+
+<script>
+    const summaryEl = document.getElementById("summary");
+    const monitorListEl = document.getElementById("monitor-list");
+    const formEl = document.getElementById("monitor-form");
+
+    async function request(path, options = {}) {
+        const response = await fetch(path, {
+            headers: { "Content-Type": "application/json" },
+            ...options,
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ message: "Request failed" }));
+            throw new Error(error.message || "Request failed");
+        }
+        if (response.status === 204) {
+            return null;
+        }
+        return response.json();
+    }
+
+    function formatDate(value) {
+        if (!value) return "-";
+        return new Date(value).toLocaleString();
+    }
+
+    function statusClass(status) {
+        return String(status || "UNKNOWN").toLowerCase();
+    }
+
+    function renderSummary(summary) {
+        const cards = [
+            ["Total", summary.totalMonitors],
+            ["Active", summary.activeMonitors],
+            ["Healthy", summary.upMonitors],
+            ["Down", summary.downMonitors],
+            ["Avg ms", summary.averageLatencyMs],
+        ];
+        summaryEl.innerHTML = cards.map(([label, value]) => `
+            <div class="summary-card">
+                <span>${label}</span>
+                <strong>${value}</strong>
+            </div>
+        `).join("");
+    }
+
+    function renderChecks(checks) {
+        if (!checks.length) {
+            return `<div class="empty">No checks yet. Run one manually to seed history.</div>`;
+        }
+        return `
+            <div class="checks">
+                ${checks.map(check => `
+                    <div class="check-row">
+                        <strong>${check.status}</strong>
+                        <span>${check.httpStatus ?? "-"} / ${check.latencyMs ?? "-"}ms / ${formatDate(check.checkedAt)}</span>
+                    </div>
+                `).join("")}
+            </div>
+        `;
+    }
+
+    async function loadChecks(monitorId) {
+        const checks = await request(`/api/monitors/${monitorId}/checks`);
+        const checksEl = document.getElementById(`checks-${monitorId}`);
+        checksEl.innerHTML = renderChecks(checks);
+    }
+
+    function renderMonitors(monitors) {
+        if (!monitors.length) {
+            monitorListEl.innerHTML = `
+                <section class="panel monitor-card">
+                    <div class="panel-inner">
+                        <h2>No monitors yet</h2>
+                        <p class="empty">Create your first endpoint on the left and start checking it right away.</p>
+                    </div>
+                </section>
+            `;
+            return;
+        }
+
+        monitorListEl.innerHTML = monitors.map(monitor => `
+            <article class="panel monitor-card">
+                <div class="panel-inner">
+                    <div class="topline">
+                        <div>
+                            <h2>${monitor.name}</h2>
+                            <div class="url">${monitor.url}</div>
+                        </div>
+                        <span class="badge ${statusClass(monitor.status)}">${monitor.status}</span>
+                    </div>
+
+                    <div class="detail-grid">
+                        <div>
+                            <span>Interval</span>
+                            <strong>${monitor.intervalSeconds}s</strong>
+                        </div>
+                        <div>
+                            <span>Last latency</span>
+                            <strong>${monitor.lastLatencyMs ?? "-"} ms</strong>
+                        </div>
+                        <div>
+                            <span>Failures</span>
+                            <strong>${monitor.consecutiveFailures}</strong>
+                        </div>
+                        <div>
+                            <span>Last success</span>
+                            <strong>${monitor.lastSuccessCheckedAt ? new Date(monitor.lastSuccessCheckedAt).toLocaleTimeString() : "-"}</strong>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="primary" data-action="check" data-id="${monitor.id}">Run check</button>
+                        <button class="${monitor.active ? "danger" : "ghost"}" data-action="${monitor.active ? "pause" : "resume"}" data-id="${monitor.id}">
+                            ${monitor.active ? "Pause monitor" : "Resume monitor"}
+                        </button>
+                        <button class="ghost" data-action="history" data-id="${monitor.id}">Load history</button>
+                    </div>
+
+                    <div class="hint">
+                        Active: <strong>${monitor.active ? "Yes" : "No"}</strong> |
+                        Last checked: <strong>${formatDate(monitor.lastCheckedAt)}</strong> |
+                        Last error: <strong>${monitor.lastError ?? "-"}</strong>
+                    </div>
+
+                    <div id="checks-${monitor.id}"></div>
+                </div>
+            </article>
+        `).join("");
+    }
+
+    async function refresh() {
+        const [summary, monitors] = await Promise.all([
+            request("/api/monitors/summary"),
+            request("/api/monitors"),
+        ]);
+        renderSummary(summary);
+        renderMonitors(monitors);
+    }
+
+    formEl.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = {
+            name: document.getElementById("name").value,
+            url: document.getElementById("url").value,
+            intervalSeconds: Number(document.getElementById("intervalSeconds").value),
+        };
+
+        try {
+            await request("/api/monitors", {
+                method: "POST",
+                body: JSON.stringify(payload),
+            });
+            formEl.reset();
+            document.getElementById("intervalSeconds").value = 60;
+            await refresh();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    monitorListEl.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) return;
+
+        const monitorId = button.dataset.id;
+        const action = button.dataset.action;
+
+        try {
+            if (action === "check") {
+                await request(`/api/monitors/${monitorId}/checks`, { method: "POST" });
+                await refresh();
+                await loadChecks(monitorId);
+                return;
+            }
+            if (action === "pause" || action === "resume") {
+                await request(`/api/monitors/${monitorId}/${action}`, { method: "POST" });
+                await refresh();
+                return;
+            }
+            if (action === "history") {
+                await loadChecks(monitorId);
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    refresh().catch((error) => {
+        monitorListEl.innerHTML = `<section class="panel monitor-card"><div class="panel-inner"><p class="empty">${error.message}</p></div></section>`;
+    });
+</script>
+</body>
+</html>

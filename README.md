@@ -9,8 +9,10 @@ It lets you register URLs, run checks on demand, store recent check history, and
 - Register HTTP/HTTPS monitors
 - List monitors and inspect the latest status
 - Trigger manual checks
+- Pause or resume noisy monitors without deleting them
 - Persist recent check history in H2 or PostgreSQL
 - Scheduled background checks every 30 seconds
+- Lightweight web dashboard at `/`
 - `/actuator/health`, `/actuator/metrics`, `/actuator/prometheus`
 - Optional Sentry integration through environment variables
 
@@ -68,10 +70,23 @@ curl http://localhost:8080/api/monitors
 curl -X POST http://localhost:8080/api/monitors/1/checks
 ```
 
+### Pause or resume a monitor
+
+```bash
+curl -X POST http://localhost:8080/api/monitors/1/pause
+curl -X POST http://localhost:8080/api/monitors/1/resume
+```
+
 ### List recent checks
 
 ```bash
 curl http://localhost:8080/api/monitors/1/checks
+```
+
+### Dashboard summary
+
+```bash
+curl http://localhost:8080/api/monitors/summary
 ```
 
 ## Observability
@@ -79,6 +94,7 @@ curl http://localhost:8080/api/monitors/1/checks
 - Health: `http://localhost:8080/actuator/health`
 - Prometheus metrics: `http://localhost:8080/actuator/prometheus`
 - Prometheus UI: `http://localhost:9090`
+- Browser dashboard: `http://localhost:8080`
 
 To enable Sentry, provide a DSN:
 

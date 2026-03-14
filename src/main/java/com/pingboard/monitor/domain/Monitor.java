@@ -50,6 +50,11 @@ public class Monitor {
 
     private Instant lastCheckedAt;
 
+    private Instant lastSuccessCheckedAt;
+
+    @Column(nullable = false)
+    private int consecutiveFailures;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -70,6 +75,20 @@ public class Monitor {
         this.lastLatencyMs = latencyMs;
         this.lastError = error;
         this.lastCheckedAt = checkedAt;
+        if (status == MonitorStatus.UP) {
+            this.lastSuccessCheckedAt = checkedAt;
+            this.consecutiveFailures = 0;
+            return;
+        }
+        this.consecutiveFailures += 1;
+    }
+
+    public void pause() {
+        this.active = false;
+    }
+
+    public void resume() {
+        this.active = true;
     }
 
     @PrePersist

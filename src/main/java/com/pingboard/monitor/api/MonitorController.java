@@ -2,6 +2,7 @@ package com.pingboard.monitor.api;
 
 import com.pingboard.monitor.api.dto.CheckResultResponse;
 import com.pingboard.monitor.api.dto.CreateMonitorRequest;
+import com.pingboard.monitor.api.dto.DashboardSummaryResponse;
 import com.pingboard.monitor.api.dto.MonitorResponse;
 import com.pingboard.monitor.service.MonitorService;
 import jakarta.validation.Valid;
@@ -36,6 +37,11 @@ public class MonitorController {
                 .toList();
     }
 
+    @GetMapping("/summary")
+    public DashboardSummaryResponse summary() {
+        return monitorService.getSummary();
+    }
+
     @GetMapping("/{monitorId}")
     public MonitorResponse findById(@PathVariable Long monitorId) {
         return MonitorResponse.from(monitorService.findById(monitorId));
@@ -51,5 +57,15 @@ public class MonitorController {
     @PostMapping("/{monitorId}/checks")
     public CheckResultResponse runCheck(@PathVariable Long monitorId) {
         return CheckResultResponse.from(monitorService.runCheck(monitorId));
+    }
+
+    @PostMapping("/{monitorId}/pause")
+    public MonitorResponse pause(@PathVariable Long monitorId) {
+        return MonitorResponse.from(monitorService.pause(monitorId));
+    }
+
+    @PostMapping("/{monitorId}/resume")
+    public MonitorResponse resume(@PathVariable Long monitorId) {
+        return MonitorResponse.from(monitorService.resume(monitorId));
     }
 }

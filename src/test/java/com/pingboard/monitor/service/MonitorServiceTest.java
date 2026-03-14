@@ -43,6 +43,17 @@ class MonitorServiceTest {
         assertThat(persistedMonitor.getLastHttpStatus()).isEqualTo(200);
     }
 
+    @Test
+    void pausesAndResumesMonitor() {
+        Monitor monitor = monitorService.create(new CreateMonitorRequest("PingBoard", "https://example.com", 60));
+
+        Monitor paused = monitorService.pause(monitor.getId());
+        Monitor resumed = monitorService.resume(monitor.getId());
+
+        assertThat(paused.isActive()).isFalse();
+        assertThat(resumed.isActive()).isTrue();
+    }
+
     @TestConfiguration
     static class TestConfig {
         @Bean
