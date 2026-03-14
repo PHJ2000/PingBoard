@@ -72,7 +72,7 @@
       "pluginVersion": "12.2.0",
       "targets": [
         {
-          "expr": "pingboard_monitors_total",
+          "expr": "pingboard_monitors",
           "refId": "A"
         }
       ],
