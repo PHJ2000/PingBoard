@@ -42,6 +42,11 @@ pingboard:
     webhook-url: ${PINGBOARD_ALERTS_WEBHOOK_URL:}
     failure-threshold: ${PINGBOARD_ALERTS_FAILURE_THRESHOLD:3}
     app-base-url: ${PINGBOARD_APP_BASE_URL:http://localhost:8080}
+  security:
+    operator:
+      username: ${PINGBOARD_OPERATOR_USERNAME:operator}
+      password: ${PINGBOARD_OPERATOR_PASSWORD:pingboard123!}
+      role: ${PINGBOARD_OPERATOR_ROLE:OPERATOR}
 
 sentry:
   traces-sample-rate: 1.0

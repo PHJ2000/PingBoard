@@ -17,6 +17,7 @@ It lets you register URLs, run checks on demand, store recent check history, and
 - `/actuator/health`, `/actuator/metrics`, `/actuator/prometheus`
 - Optional Sentry integration through environment variables
 - Optional Slack or Discord webhook alerts for incidents and recoveries
+- Basic auth for the dashboard and monitor APIs
 
 ## Stack
 
@@ -57,6 +58,24 @@ set PINGBOARD_ALERTS_ENABLED=true
 set PINGBOARD_ALERTS_PROVIDER=DISCORD
 set PINGBOARD_ALERTS_WEBHOOK_URL=https://discord.com/api/webhooks/...
 set PINGBOARD_ALERTS_FAILURE_THRESHOLD=3
+./gradlew bootRun
+```
+
+### 5. Operator login
+
+By default, PingBoard now protects `/`, `/api/**`, and `/actuator/prometheus` with HTTP Basic auth.
+The default operator account is:
+
+```text
+username: operator
+password: pingboard123!
+```
+
+You can override it with environment variables:
+
+```bash
+set PINGBOARD_OPERATOR_USERNAME=ops-admin
+set PINGBOARD_OPERATOR_PASSWORD=change-me
 ./gradlew bootRun
 ```
 
@@ -117,6 +136,9 @@ curl http://localhost:8080/api/monitors/summary?environment=staging
 - Prometheus metrics: `http://localhost:8080/actuator/prometheus`
 - Prometheus UI: `http://localhost:9090`
 - Browser dashboard: `http://localhost:8080`
+
+`/actuator/health` and `/actuator/info` stay public for probes.
+`/actuator/prometheus` now requires the operator credentials, so configure your scraper accordingly.
 
 To enable Sentry, provide a DSN:
 
