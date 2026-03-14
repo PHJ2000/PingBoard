@@ -167,6 +167,12 @@ set PINGBOARD_APP_BASE_URL=http://localhost:8080
 ./gradlew bootRun
 ```
 
+For a quick Sentry verification after startup, trigger the built-in test endpoint with your operator credentials:
+
+```bash
+curl -X POST -u ops-admin:change-me http://localhost:8080/api/dev/sentry-test
+```
+
 ## Weekend MVP ideas
 
 - Add latency SLO alerts in Prometheus/Grafana
