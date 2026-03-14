@@ -4,6 +4,8 @@ PingBoard is a Spring Boot MVP for monitoring HTTP endpoints.
 
 It lets you register URLs, run checks on demand, store recent check history, and expose operational metrics through Actuator and Prometheus.
 
+This repository also includes deployment, observability, and incident-response practice flows for backend learning.
+
 ## What Problem It Solves
 
 When a small service starts failing, teams often bounce between multiple tools just to answer three simple questions:
