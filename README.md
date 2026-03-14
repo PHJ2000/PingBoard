@@ -15,6 +15,7 @@ It lets you register URLs, run checks on demand, store recent check history, and
 - Lightweight web dashboard at `/`
 - `/actuator/health`, `/actuator/metrics`, `/actuator/prometheus`
 - Optional Sentry integration through environment variables
+- Optional Slack or Discord webhook alerts for incidents and recoveries
 
 ## Stack
 
@@ -46,6 +47,16 @@ set SPRING_PROFILES_ACTIVE=postgres
 
 ```bash
 docker compose up --build
+```
+
+### 4. Turn on alerts
+
+```bash
+set PINGBOARD_ALERTS_ENABLED=true
+set PINGBOARD_ALERTS_PROVIDER=DISCORD
+set PINGBOARD_ALERTS_WEBHOOK_URL=https://discord.com/api/webhooks/...
+set PINGBOARD_ALERTS_FAILURE_THRESHOLD=3
+./gradlew bootRun
 ```
 
 ## API
@@ -103,9 +114,18 @@ set SENTRY_DSN=https://<key>@<org>.ingest.sentry.io/<project>
 ./gradlew bootRun
 ```
 
+To enable incident notifications, provide a webhook URL for Slack or Discord.
+PingBoard sends one alert when a monitor crosses the failure threshold and one recovery alert when it comes back.
+
+```bash
+set PINGBOARD_ALERTS_ENABLED=true
+set PINGBOARD_ALERTS_PROVIDER=SLACK
+set PINGBOARD_ALERTS_WEBHOOK_URL=https://hooks.slack.com/services/...
+set PINGBOARD_APP_BASE_URL=http://localhost:8080
+./gradlew bootRun
+```
+
 ## Weekend MVP ideas
 
-- Add pause/resume endpoints for monitors
 - Add latency SLO alerts in Prometheus/Grafana
-- Add Slack or Discord notifications for repeated failures
 - Add tags or environments like `prod`, `staging`, `dev`

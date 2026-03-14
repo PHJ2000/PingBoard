@@ -1,5 +1,7 @@
 package com.pingboard.monitor.service;
 
+import com.pingboard.alert.config.AlertProperties;
+import com.pingboard.alert.service.MonitorAlertService;
 import com.pingboard.monitor.api.dto.CreateMonitorRequest;
 import com.pingboard.monitor.api.dto.DashboardSummaryResponse;
 import com.pingboard.monitor.domain.CheckResult;
@@ -22,6 +24,8 @@ public class MonitorService {
     private final MonitorRepository monitorRepository;
     private final CheckResultRepository checkResultRepository;
     private final HttpPingClient httpPingClient;
+    private final MonitorAlertService monitorAlertService;
+    private final AlertProperties alertProperties;
 
     @Transactional
     public Monitor create(CreateMonitorRequest request) {
@@ -65,14 +69,16 @@ public class MonitorService {
     @Transactional
     public CheckResult runCheck(Long monitorId) {
         Monitor monitor = findById(monitorId);
+        MonitorStatus previousStatus = monitor.getStatus();
         PingResult pingResult = httpPingClient.ping(monitor.getUrl());
+        Instant checkedAt = Instant.now();
 
         monitor.applyCheckResult(
                 pingResult.status(),
                 pingResult.httpStatus(),
                 pingResult.latencyMs(),
                 pingResult.errorMessage(),
-                Instant.now()
+                checkedAt
         );
 
         CheckResult checkResult = new CheckResult(
@@ -82,6 +88,15 @@ public class MonitorService {
                 pingResult.latencyMs(),
                 pingResult.errorMessage()
         );
+
+        if (monitor.shouldNotifyFailure(alertProperties.getFailureThreshold())) {
+            monitorAlertService.notifyFailure(monitor);
+            monitor.markAlertSent(MonitorStatus.DOWN, checkedAt);
+        } else if (monitor.shouldNotifyRecovery(previousStatus)) {
+            monitorAlertService.notifyRecovery(monitor);
+            monitor.markAlertSent(MonitorStatus.UP, checkedAt);
+        }
+
         log.info("Monitor {} checked with status {}", monitor.getName(), pingResult.status());
         return checkResultRepository.save(checkResult);
     }

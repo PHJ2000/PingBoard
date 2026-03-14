@@ -36,6 +36,12 @@ pingboard:
     connect-timeout: 3s
     read-timeout: 5s
     scheduler-delay: 30s
+  alerts:
+    enabled: ${PINGBOARD_ALERTS_ENABLED:false}
+    provider: ${PINGBOARD_ALERTS_PROVIDER:DISCORD}
+    webhook-url: ${PINGBOARD_ALERTS_WEBHOOK_URL:}
+    failure-threshold: ${PINGBOARD_ALERTS_FAILURE_THRESHOLD:3}
+    app-base-url: ${PINGBOARD_APP_BASE_URL:http://localhost:8080}
 
 sentry:
   traces-sample-rate: 1.0
@@ -50,4 +56,3 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: pingboard
     password: pingboard
-

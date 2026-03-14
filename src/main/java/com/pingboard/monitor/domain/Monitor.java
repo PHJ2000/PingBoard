@@ -55,6 +55,12 @@ public class Monitor {
     @Column(nullable = false)
     private int consecutiveFailures;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private MonitorStatus lastNotifiedStatus;
+
+    private Instant lastNotifiedAt;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -89,6 +95,23 @@ public class Monitor {
 
     public void resume() {
         this.active = true;
+    }
+
+    public boolean shouldNotifyFailure(int failureThreshold) {
+        return status == MonitorStatus.DOWN
+                && consecutiveFailures >= failureThreshold
+                && lastNotifiedStatus != MonitorStatus.DOWN;
+    }
+
+    public boolean shouldNotifyRecovery(MonitorStatus previousStatus) {
+        return status == MonitorStatus.UP
+                && previousStatus == MonitorStatus.DOWN
+                && lastNotifiedStatus == MonitorStatus.DOWN;
+    }
+
+    public void markAlertSent(MonitorStatus notifiedStatus, Instant notifiedAt) {
+        this.lastNotifiedStatus = notifiedStatus;
+        this.lastNotifiedAt = notifiedAt;
     }
 
     @PrePersist
