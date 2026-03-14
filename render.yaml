@@ -1,0 +1,44 @@
+services:
+  - name: pingboard-app
+    type: web
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeployTrigger: checksPass
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: postgres
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: pingboard-db
+          property: connectionString
+      - key: PINGBOARD_APP_BASE_URL
+        sync: false
+      - key: PINGBOARD_ALERTS_ENABLED
+        value: "true"
+      - key: PINGBOARD_ALERTS_PROVIDER
+        value: DISCORD
+      - key: PINGBOARD_ALERTS_FAILURE_THRESHOLD
+        value: "3"
+      - key: PINGBOARD_ALERTS_WEBHOOK_URL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: PINGBOARD_OPERATOR_USERNAME
+        value: operator
+      - key: PINGBOARD_OPERATOR_PASSWORD
+        sync: false
+      - key: PINGBOARD_OPERATOR_ROLE
+        value: OPERATOR
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+
+databases:
+  - name: pingboard-db
+    plan: free
+    region: singapore
+    databaseName: pingboard
+    user: pingboard

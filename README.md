@@ -43,6 +43,7 @@ PingBoard compresses that loop into one local-first stack so you can register en
 - Prometheus metrics registry
 - Grafana + Loki + Promtail local observability stack
 - Sentry Spring Boot starter
+- Render Blueprint for hosted deployment
 
 ## Run locally
 
@@ -98,6 +99,26 @@ set PINGBOARD_OPERATOR_PASSWORD=change-me
 
 Copy `.env.example` to `.env` and only fill the values you actually need.
 If you skip Sentry and webhook values, the local stack still works.
+
+## Deployment
+
+PingBoard is prepared for Render-based hosting.
+
+- Blueprint: [render.yaml](/C:/Users/ParkJaeHong/PingBoard/render.yaml)
+- CI: [.github/workflows/ci.yml](/C:/Users/ParkJaeHong/PingBoard/.github/workflows/ci.yml)
+- Deploy hook workflow: [.github/workflows/render-deploy.yml](/C:/Users/ParkJaeHong/PingBoard/.github/workflows/render-deploy.yml)
+- Deployment checklist: [deployment-checklist.md](/C:/Users/ParkJaeHong/PingBoard/docs/operations/deployment-checklist.md)
+
+Render notes:
+- Render Blueprints support top-level `services` and `databases`.
+- Health checks can be configured with `healthCheckPath`.
+- Secrets can be prompted in the dashboard by marking env vars with `sync: false`.
+- Render manages TLS automatically for `onrender.com` and verified custom domains.
+
+Operational docs:
+- [runbook.md](/C:/Users/ParkJaeHong/PingBoard/docs/operations/runbook.md)
+- [backup-recovery.md](/C:/Users/ParkJaeHong/PingBoard/docs/operations/backup-recovery.md)
+- [data-retention.md](/C:/Users/ParkJaeHong/PingBoard/docs/operations/data-retention.md)
 
 ## API
 
