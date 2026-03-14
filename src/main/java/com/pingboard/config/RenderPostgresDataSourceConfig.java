@@ -16,6 +16,8 @@ public class RenderPostgresDataSourceConfig {
     @Bean
     DataSource dataSource(org.springframework.core.env.Environment environment) {
         String rawUrl = environment.getProperty("spring.datasource.url");
+        String explicitUsername = System.getenv("SPRING_DATASOURCE_USERNAME");
+        String explicitPassword = System.getenv("SPRING_DATASOURCE_PASSWORD");
         String username = environment.getProperty("spring.datasource.username");
         String password = environment.getProperty("spring.datasource.password");
         String driverClassName = environment.getProperty("spring.datasource.driver-class-name", "org.postgresql.Driver");
@@ -26,8 +28,8 @@ public class RenderPostgresDataSourceConfig {
         if (rawUrl != null && rawUrl.startsWith("postgresql://")) {
             ParsedPostgresUrl parsed = ParsedPostgresUrl.parse(rawUrl);
             dataSource.setJdbcUrl(parsed.jdbcUrl());
-            dataSource.setUsername(StringUtils.hasText(username) ? username : parsed.username());
-            dataSource.setPassword(StringUtils.hasText(password) ? password : parsed.password());
+            dataSource.setUsername(StringUtils.hasText(explicitUsername) ? explicitUsername : parsed.username());
+            dataSource.setPassword(StringUtils.hasText(explicitPassword) ? explicitPassword : parsed.password());
             return dataSource;
         }
 
