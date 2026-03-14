@@ -1,10 +1,10 @@
 # PingBoard
 
-PingBoard is a Spring Boot MVP for monitoring HTTP endpoints.
+PingBoard is a Spring Boot-based endpoint monitoring service built to practice what happens after backend code is deployed.
 
-It lets you register URLs, run checks on demand, store recent check history, and expose operational metrics through Actuator and Prometheus.
+Instead of stopping at CRUD or API delivery, this project follows the full operational loop: monitor registration, failure detection, Discord alerting, Sentry error tracking, Grafana and Loki observability, Render deployment, and GitHub Actions-based redeploy automation.
 
-This repository also includes deployment, observability, and incident-response practice flows for backend learning.
+It is designed as a backend learning project focused on service operations rather than server setup alone, so the repo includes both application code and the operational documents needed to validate, observe, and respond to incidents.
 
 ## What Problem It Solves
 
