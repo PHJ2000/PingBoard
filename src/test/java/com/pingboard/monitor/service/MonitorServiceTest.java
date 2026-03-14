@@ -37,7 +37,7 @@ class MonitorServiceTest {
 
     @Test
     void createsMonitorAndPersistsManualCheck() {
-        Monitor monitor = monitorService.create(new CreateMonitorRequest("OpenAI", "https://example.com", 60));
+        Monitor monitor = monitorService.create(new CreateMonitorRequest("OpenAI", "https://example.com", 60, "prod", List.of("public", "critical")));
 
         CheckResult checkResult = monitorService.runCheck(monitor.getId());
 
@@ -49,11 +49,13 @@ class MonitorServiceTest {
         assertThat(checkResultRepository.count()).isEqualTo(1);
         assertThat(persistedMonitor.getStatus()).isEqualTo(MonitorStatus.UP);
         assertThat(persistedMonitor.getLastHttpStatus()).isEqualTo(200);
+        assertThat(persistedMonitor.getEnvironment()).isEqualTo("prod");
+        assertThat(persistedMonitor.getTags()).containsExactlyInAnyOrder("public", "critical");
     }
 
     @Test
     void pausesAndResumesMonitor() {
-        Monitor monitor = monitorService.create(new CreateMonitorRequest("PingBoard", "https://example.com", 60));
+        Monitor monitor = monitorService.create(new CreateMonitorRequest("PingBoard", "https://example.com", 60, "staging", List.of("ops")));
 
         Monitor paused = monitorService.pause(monitor.getId());
         Monitor resumed = monitorService.resume(monitor.getId());
@@ -64,7 +66,7 @@ class MonitorServiceTest {
 
     @Test
     void sendsFailureAndRecoveryAlertOncePerIncident() {
-        Monitor monitor = monitorService.create(new CreateMonitorRequest("Alerted", "https://example.com", 60));
+        Monitor monitor = monitorService.create(new CreateMonitorRequest("Alerted", "https://example.com", 60, "prod", List.of("critical")));
 
         stubHttpPingClient.nextResult = PingResult.failure(500, 80L, "upstream down");
         monitorService.runCheck(monitor.getId());
@@ -76,6 +78,18 @@ class MonitorServiceTest {
 
         assertThat(recordingAlertService.failureCount).isEqualTo(1);
         assertThat(recordingAlertService.recoveryCount).isEqualTo(1);
+    }
+
+    @Test
+    void filtersMonitorsByEnvironment() {
+        monitorService.create(new CreateMonitorRequest("Prod API", "https://example.com/prod", 60, "prod", List.of("api")));
+        monitorService.create(new CreateMonitorRequest("Dev API", "https://example.com/dev", 60, "dev", List.of("api")));
+
+        List<Monitor> prodMonitors = monitorService.findAll("prod");
+
+        assertThat(prodMonitors).isNotEmpty();
+        assertThat(prodMonitors).allMatch(monitor -> monitor.getEnvironment().equals("prod"));
+        assertThat(prodMonitors.stream().map(Monitor::getName)).contains("Prod API");
     }
 
     @TestConfiguration

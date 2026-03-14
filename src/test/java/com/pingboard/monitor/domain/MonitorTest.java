@@ -3,13 +3,14 @@ package com.pingboard.monitor.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class MonitorTest {
 
     @Test
     void resetsConsecutiveFailuresAfterSuccess() {
-        Monitor monitor = new Monitor("Example", "https://example.com", 60);
+        Monitor monitor = new Monitor("Example", "https://example.com", 60, "dev", Set.of("demo"));
         Instant now = Instant.parse("2026-03-14T01:00:00Z");
 
         monitor.applyCheckResult(MonitorStatus.DOWN, 500, 120L, "boom", now);

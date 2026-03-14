@@ -2,12 +2,15 @@ package com.pingboard.monitor.api.dto;
 
 import com.pingboard.monitor.domain.Monitor;
 import java.time.Instant;
+import java.util.Set;
 
 public record MonitorResponse(
         Long id,
         String name,
         String url,
         Integer intervalSeconds,
+        String environment,
+        Set<String> tags,
         boolean active,
         String status,
         Integer lastHttpStatus,
@@ -24,6 +27,8 @@ public record MonitorResponse(
                 monitor.getName(),
                 monitor.getUrl(),
                 monitor.getIntervalSeconds(),
+                monitor.getEnvironment(),
+                monitor.getTags(),
                 monitor.isActive(),
                 monitor.getStatus().name(),
                 monitor.getLastHttpStatus(),

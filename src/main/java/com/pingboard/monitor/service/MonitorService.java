@@ -11,10 +11,13 @@ import com.pingboard.monitor.repository.CheckResultRepository;
 import com.pingboard.monitor.repository.MonitorRepository;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -29,18 +32,31 @@ public class MonitorService {
 
     @Transactional
     public Monitor create(CreateMonitorRequest request) {
-        Monitor monitor = new Monitor(request.name(), request.url(), request.intervalSeconds());
+        Set<String> tags = request.tags() == null ? Set.of() : request.tags().stream()
+                .filter(StringUtils::hasText)
+                .map(tag -> tag.trim().toLowerCase(Locale.ROOT))
+                .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
+        Monitor monitor = new Monitor(
+                request.name(),
+                request.url(),
+                request.intervalSeconds(),
+                request.environment().trim().toLowerCase(Locale.ROOT),
+                tags
+        );
         return monitorRepository.save(monitor);
     }
 
     @Transactional(readOnly = true)
-    public List<Monitor> findAll() {
-        return monitorRepository.findAll();
+    public List<Monitor> findAll(String environment) {
+        if (!StringUtils.hasText(environment)) {
+            return monitorRepository.findAll();
+        }
+        return monitorRepository.findAllByEnvironmentIgnoreCaseOrderByIdAsc(environment.trim());
     }
 
     @Transactional(readOnly = true)
-    public DashboardSummaryResponse getSummary() {
-        List<Monitor> monitors = monitorRepository.findAll();
+    public DashboardSummaryResponse getSummary(String environment) {
+        List<Monitor> monitors = findAll(environment);
         long total = monitors.size();
         long active = monitors.stream().filter(Monitor::isActive).count();
         long down = monitors.stream().filter(monitor -> monitor.getStatus() == MonitorStatus.DOWN).count();

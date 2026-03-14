@@ -1,16 +1,22 @@
 package com.pingboard.monitor.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,6 +39,14 @@ public class Monitor {
 
     @Column(nullable = false)
     private Integer intervalSeconds;
+
+    @Column(nullable = false, length = 30)
+    private String environment;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "monitor_tags", joinColumns = @JoinColumn(name = "monitor_id"))
+    @Column(name = "tag", nullable = false, length = 50)
+    private Set<String> tags = new LinkedHashSet<>();
 
     @Column(nullable = false)
     private boolean active;
@@ -67,10 +81,12 @@ public class Monitor {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    public Monitor(String name, String url, Integer intervalSeconds) {
+    public Monitor(String name, String url, Integer intervalSeconds, String environment, Set<String> tags) {
         this.name = name;
         this.url = url;
         this.intervalSeconds = intervalSeconds;
+        this.environment = environment;
+        this.tags = new LinkedHashSet<>(tags);
         this.active = true;
         this.status = MonitorStatus.UNKNOWN;
     }

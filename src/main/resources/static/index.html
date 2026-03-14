@@ -108,7 +108,8 @@
             margin-top: 20px;
         }
 
-        input {
+        input,
+        select {
             width: 100%;
             border: 1px solid var(--border);
             border-radius: 14px;
@@ -226,6 +227,26 @@
             gap: 10px;
         }
 
+        .stack {
+            display: grid;
+            gap: 12px;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag-chip {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.08);
+            color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
         .checks {
             display: grid;
             gap: 8px;
@@ -300,9 +321,24 @@
                 <form id="monitor-form">
                     <input id="name" name="name" placeholder="Monitor name" required />
                     <input id="url" name="url" placeholder="https://example.com/health" required />
+                    <select id="environment" name="environment" required>
+                        <option value="prod">prod</option>
+                        <option value="staging">staging</option>
+                        <option value="dev" selected>dev</option>
+                    </select>
+                    <input id="tags" name="tags" placeholder="critical, public, payments" />
                     <input id="intervalSeconds" name="intervalSeconds" type="number" min="30" max="3600" value="60" required />
                     <button class="primary" type="submit">Add Monitor</button>
                 </form>
+
+                <div class="stack">
+                    <select id="environment-filter" name="environment-filter">
+                        <option value="">All environments</option>
+                        <option value="prod">prod</option>
+                        <option value="staging">staging</option>
+                        <option value="dev">dev</option>
+                    </select>
+                </div>
 
                 <p class="hint">
                     Register endpoints here, then use the cards on the right to run checks,
@@ -319,6 +355,12 @@
     const summaryEl = document.getElementById("summary");
     const monitorListEl = document.getElementById("monitor-list");
     const formEl = document.getElementById("monitor-form");
+    const environmentFilterEl = document.getElementById("environment-filter");
+
+    function currentEnvironmentQuery() {
+        const env = environmentFilterEl.value;
+        return env ? `?environment=${encodeURIComponent(env)}` : "";
+    }
 
     async function request(path, options = {}) {
         const response = await fetch(path, {
@@ -382,6 +424,13 @@
         checksEl.innerHTML = renderChecks(checks);
     }
 
+    function renderTags(tags) {
+        if (!tags || !tags.length) {
+            return `<span class="tag-chip">untagged</span>`;
+        }
+        return tags.map(tag => `<span class="tag-chip">${tag}</span>`).join("");
+    }
+
     function renderMonitors(monitors) {
         if (!monitors.length) {
             monitorListEl.innerHTML = `
@@ -402,6 +451,10 @@
                         <div>
                             <h2>${monitor.name}</h2>
                             <div class="url">${monitor.url}</div>
+                            <div class="tag-list" style="margin-top: 10px;">
+                                <span class="tag-chip">${monitor.environment}</span>
+                                ${renderTags(monitor.tags)}
+                            </div>
                         </div>
                         <span class="badge ${statusClass(monitor.status)}">${monitor.status}</span>
                     </div>
@@ -446,9 +499,10 @@
     }
 
     async function refresh() {
+        const query = currentEnvironmentQuery();
         const [summary, monitors] = await Promise.all([
-            request("/api/monitors/summary"),
-            request("/api/monitors"),
+            request(`/api/monitors/summary${query}`),
+            request(`/api/monitors${query}`),
         ]);
         renderSummary(summary);
         renderMonitors(monitors);
@@ -459,6 +513,11 @@
         const payload = {
             name: document.getElementById("name").value,
             url: document.getElementById("url").value,
+            environment: document.getElementById("environment").value,
+            tags: document.getElementById("tags").value
+                .split(",")
+                .map(tag => tag.trim())
+                .filter(Boolean),
             intervalSeconds: Number(document.getElementById("intervalSeconds").value),
         };
 
@@ -468,11 +527,16 @@
                 body: JSON.stringify(payload),
             });
             formEl.reset();
+            document.getElementById("environment").value = "dev";
             document.getElementById("intervalSeconds").value = 60;
             await refresh();
         } catch (error) {
             alert(error.message);
         }
+    });
+
+    environmentFilterEl.addEventListener("change", async () => {
+        await refresh();
     });
 
     monitorListEl.addEventListener("click", async (event) => {

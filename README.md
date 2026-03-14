@@ -8,6 +8,7 @@ It lets you register URLs, run checks on demand, store recent check history, and
 
 - Register HTTP/HTTPS monitors
 - List monitors and inspect the latest status
+- Group monitors by environment and tags
 - Trigger manual checks
 - Pause or resume noisy monitors without deleting them
 - Persist recent check history in H2 or PostgreSQL
@@ -69,10 +70,19 @@ curl -X POST http://localhost:8080/api/monitors ^
   -d "{\"name\":\"OpenAI\",\"url\":\"https://example.com\",\"intervalSeconds\":60}"
 ```
 
+With environment and tags:
+
+```bash
+curl -X POST http://localhost:8080/api/monitors ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Prod API\",\"url\":\"https://example.com/health\",\"intervalSeconds\":60,\"environment\":\"prod\",\"tags\":[\"critical\",\"public\"]}"
+```
+
 ### List monitors
 
 ```bash
 curl http://localhost:8080/api/monitors
+curl http://localhost:8080/api/monitors?environment=prod
 ```
 
 ### Run a manual check
@@ -98,6 +108,7 @@ curl http://localhost:8080/api/monitors/1/checks
 
 ```bash
 curl http://localhost:8080/api/monitors/summary
+curl http://localhost:8080/api/monitors/summary?environment=staging
 ```
 
 ## Observability
