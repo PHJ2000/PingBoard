@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: pingboard
+  datasource:
+    url: jdbc:h2:mem:pingboard;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  metrics:
+    tags:
+      application: pingboard
+
+pingboard:
+  checker:
+    connect-timeout: 3s
+    read-timeout: 5s
+    scheduler-delay: 30s
+
+sentry:
+  traces-sample-rate: 1.0
+
+---
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pingboard
+    driver-class-name: org.postgresql.Driver
+    username: pingboard
+    password: pingboard
+

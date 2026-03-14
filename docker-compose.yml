@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: pingboard
+      POSTGRES_USER: pingboard
+      POSTGRES_PASSWORD: pingboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  pingboard:
+    build:
+      context: .
+    depends_on:
+      - postgres
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pingboard
+      SPRING_DATASOURCE_USERNAME: pingboard
+      SPRING_DATASOURCE_PASSWORD: pingboard
+    ports:
+      - "8080:8080"
+
+  prometheus:
+    image: prom/prometheus:v3.4.1
+    depends_on:
+      - pingboard
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+volumes:
+  postgres-data:
